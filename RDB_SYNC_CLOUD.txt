@@ -1,0 +1,16 @@
+
+This is the original plan:(first brain storming Feb/9/2012)
+------------ ------------ ------------ ------------ ------------
+* mobile device (tablet) runs standalone small ERP
+* ERP data sync to cloud
+
+it is open for join in following first milestone tasks:
+
+1. study existing open source ERP (tryton or other java based erp...)
+2. mobile device run daemon/service?
+   2.1 tablet linux? should we try to install linux in tablet?
+3. RDB data sync to cloud
+4. an real small company to be an example <-- "I heard that Ian got one"
+
+------------ ------------ ------------ ------------ ------------
+
