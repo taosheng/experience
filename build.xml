@@ -1,4 +1,4 @@
-<project name="experience" default="dist" basedir=".">
+<project name="experience" default="try" basedir=".">
     <description>
           Just for experience....
     </description>
@@ -44,7 +44,7 @@
 
   <target name="try" depends="dist"
 	description="try something.."  >
-       <java classname="Test" >
+       <java classname="Try" >
           <classpath>
                 <path refid="base.path"/>
             </classpath>
