@@ -44,7 +44,7 @@
 
   <target name="try" depends="dist"
 	description="try something.."  >
-       <java classname="Test" >
+       <java classname="org.bigradzebra.experience.RDBExporter" >
           <classpath>
                 <path refid="base.path"/>
             </classpath>
