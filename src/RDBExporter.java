@@ -11,7 +11,7 @@ public class RDBExporter {
 	public static void main(String[] args)throws Exception {
 		// TODO Auto-generated method stub
 		println("export RDB data");
-		RDBExporter exporter = new RDBExporter("test.db");
+		RDBExporter exporter = new RDBExporter("itTalent.db");
 		exporter.exportToFolder("nosuchfolder");
 	}
 	public static void println(Object msg){
@@ -32,20 +32,33 @@ public class RDBExporter {
 		ResultSet metadataRs = metadata.getTables(null,null,null,type) ;
 		println("show table/columns...");
 		while(metadataRs.next()){
+			
 			String tableName = metadataRs.getString(3);
+			println("table:"+tableName);
 			ResultSet metadataColumns = metadata.getColumns(null,null,tableName,null);
+
 			while(metadataColumns.next()){
 				String columnName = metadataColumns.getString(4);
-				println(tableName+"."+columnName);
-				Statement stat = this.CONN.createStatement();
-		   
-		        ResultSet dataSet = stat.executeQuery("select * from "+tableName);
-		        
-		        while(dataSet.next()){
-		        	println(dataSet);
-		        }
+				// println(tableName+"."+columnName);
+			 
 			}
+			
+			
+			Statement stat = this.CONN.createStatement();
+			ResultSet dataSet = stat.executeQuery("select * from "+tableName);
+			ResultSetMetaData rsmd = dataSet.getMetaData();
+		    int numberOfColumns = rsmd.getColumnCount();
+	        while(dataSet.next()){
+	        	StringBuffer oneRow = new StringBuffer();
+	        	for(int i=1; i<= numberOfColumns ;i++){
+	        		oneRow.append(dataSet.getString(i));
+	        		oneRow.append(this.SEP);
+	        	}
+	        	println(oneRow.toString());
+	        	
+	        }
 		}
+		
 		
 	    
 	}
