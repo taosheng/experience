@@ -8,15 +8,17 @@ public class RDBExporter {
 	private List<String> RESERVE_WORDS ;
 	private static String SEP="\001";
 	private Connection CONN ;
+        private String PARTITION_VALUE="";
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args)throws Exception {
 		// TODO Auto-generated method stub
-		println("export RDB data");
+		println("[demo] export RDB data");
 		RDBExporter exporter = new RDBExporter("itTalent.db");
-	//	exporter.exportToFolder("nosuchfolder");
-		exporter.generateHiveDDL("output.ddl");
+		//exporter.exportToFolder("nosuchfolder");
+		//exporter.generateHiveDDL("output.ddl");
+		exporter.exportImportCliToFolder("nosuchfolder","2012-xx-xx","hive.cli");
 	}
 	public static void println(Object msg){
 		System.out.println(msg);
@@ -106,6 +108,28 @@ public class RDBExporter {
 		}
 
 		return tableNameList ;
+
+	}
+	/** assume that the table name +".data" is the output file name.*/
+        public void exportImportCliToFolder(String folderName,String parti,String outputFileName)throws Exception{
+
+        	PrintWriter cliout =
+                             new PrintWriter(
+                                new BufferedWriter(
+                                        new FileWriter(outputFileName)
+                                )
+                             );
+
+
+		String loadLocal = "LOAD DATA LOCAL INPATH \"%s/%s.data\" INTO TABLE TALENT PARTITION(parti='%s') ;";
+		if(parti == null ){ parti="noPartition"; }
+
+		List<String> tableNames = this.getTableNames();
+  		for(String tableName  : tableNames) {
+      			cliout.println(String.format(loadLocal,folderName,tableName,parti)); 
+    		}
+		cliout.flush();
+		cliout.close();
 
 	}
 	public void exportToFolder(String folderName)throws Exception{
