@@ -14,20 +14,22 @@ public class RDBExporter {
 	 */
 	public static void main(String[] args)throws Exception {
 		// TODO Auto-generated method stub
-		println("[demo] export RDB data");
-		RDBExporter exporter = new RDBExporter("itTalent.db");
-		//exporter.exportToFolder("nosuchfolder");
-		//exporter.generateHiveDDL("output.ddl");
-		exporter.exportImportCliToFolder("nosuchfolder","2012-xx-xx","hive.cli");
+		println("[demo] export RDB data to folder: export_folder");
+		RDBExporter exporter = new RDBExporter("jdbc:sqlite:itTalent.db","org.sqlite.JDBC");
+		exporter.exportToFolder("export_folder");
+		println("[demo] general HIVE ddl: hive.ddl");
+		exporter.generateHiveDDL("hive.ddl");
+		println("[demo] general HIVE import file command to folder: export_folder ");
+		exporter.exportImportCliToFolder("export_folder","2012-oo-xx","hive.cli");
 	}
 	public static void println(Object msg){
 		System.out.println(msg);
 	}
 
-	public RDBExporter(String dbname)throws Exception{
-		Class.forName("org.sqlite.JDBC");	
+	public RDBExporter(String dburi,String driver)throws Exception{
+		Class.forName(driver);	
 		this.CONN =
-	    	      DriverManager.getConnection("jdbc:sqlite:"+dbname);
+	    	      DriverManager.getConnection(dburi);
 		this.RESERVE_WORDS = new ArrayList<String>();
 		this.RESERVE_WORDS.add("desc");
 		this.RESERVE_WORDS.add("select");
@@ -38,12 +40,6 @@ public class RDBExporter {
             
         	StringBuffer ddl = new StringBuffer();
 
-//CREATE EXTERNAL TABLE page_view(viewTime INT, userid BIGINT,
-//     page_url STRING, referrer_url STRING,
-//     ip STRING COMMENT 'IP Address of the User',
-//     country STRING COMMENT 'country of origination')
-// COMMENT 'This is the staging page view table'
-// ROW FORMAT DELIMITED FIELDS TERMINATED BY '\054'
 		 PrintWriter ddlout =
                              new PrintWriter(
                                 new BufferedWriter(
@@ -138,11 +134,11 @@ public class RDBExporter {
 		type[0]= "TABLE";
 		
 		ResultSet metadataRs = metadata.getTables(null,null,null,type) ;
-		println("show table/columns...");
+		// println("show table/columns...");
 		while(metadataRs.next()){
 			
 			String tableName = metadataRs.getString(3);
-			println("table:"+tableName);
+			println("export table:"+tableName);
  			PrintWriter tableFileout = 
    			     new PrintWriter(
 				new BufferedWriter(
@@ -168,7 +164,7 @@ public class RDBExporter {
 	        		oneRow.append(dataSet.getString(i));
 	        		oneRow.append(this.SEP);
 	        	}
-	        	println(oneRow.toString());
+	        	// println(oneRow.toString());
                         tableFileout.println(oneRow.toString());
                         tableFileout.flush();
 	        	
@@ -180,7 +176,6 @@ public class RDBExporter {
 		
 	    
 	}
-	
     
 
 }

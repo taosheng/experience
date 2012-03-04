@@ -1,4 +1,3 @@
 
-for latest project 
-RDB sync Cloud
-* try sqlite
+1. a simple exporter to generate necessary information for export sqlite to hive directly. It will create a partition (PARTI) in every table.
+
