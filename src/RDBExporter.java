@@ -1,6 +1,7 @@
 package org.bigradzebra.experience;
 import java.sql.*;
 import java.io.*;
+import java.util.*;
 
 public class RDBExporter {
 
@@ -13,7 +14,8 @@ public class RDBExporter {
 		// TODO Auto-generated method stub
 		println("export RDB data");
 		RDBExporter exporter = new RDBExporter("itTalent.db");
-		exporter.exportToFolder("nosuchfolder");
+	//	exporter.exportToFolder("nosuchfolder");
+		exporter.generateHiveDDL("output.ddl");
 	}
 	public static void println(Object msg){
 		System.out.println(msg);
@@ -23,6 +25,77 @@ public class RDBExporter {
 		Class.forName("org.sqlite.JDBC");	
 		this.CONN =
 	    	      DriverManager.getConnection("jdbc:sqlite:"+dbname);
+
+	}
+	/** generage hive DDL */
+        public void generateHiveDDL(String outputFileName)throws Exception{
+            
+        	StringBuffer ddl = new StringBuffer();
+
+//CREATE EXTERNAL TABLE page_view(viewTime INT, userid BIGINT,
+//     page_url STRING, referrer_url STRING,
+//     ip STRING COMMENT 'IP Address of the User',
+//     country STRING COMMENT 'country of origination')
+// COMMENT 'This is the staging page view table'
+// ROW FORMAT DELIMITED FIELDS TERMINATED BY '\054'
+		 PrintWriter ddlout =
+                             new PrintWriter(
+                                new BufferedWriter(
+                                        new FileWriter(outputFileName)
+                                )
+                             );
+
+
+		List<String> tableNames = this.getTableNames() ;
+                Iterator<String> tableNamesIter = tableNames.iterator() ;
+                while(tableNamesIter.hasNext() ) {
+			String tableName =  tableNamesIter.next() ;
+                    	ddl.append("CREATE EXTERNAL TABLE " +tableName +"( \n");
+			List<String> columns = getColumnNames(tableName) ;
+ 			Iterator<String> columnsNamesIter = columns.iterator() ;
+	 		while(columnsNamesIter.hasNext() ){
+				String columnName = columnsNamesIter.next();
+				ddl.append(columnName+" STRING, \n") ;
+			}
+			ddl.append("); \n" ) ;
+		}
+                ddlout.println(ddl.toString());
+		ddlout.flush();
+		ddlout.close();
+                //println(outddl) ;
+
+        }
+	/** simple util method to get all table name */
+        private List<String> getTableNames()throws Exception{
+		DatabaseMetaData metadata = this.CONN.getMetaData();
+		String[] type =  new String[1];
+		type[0]= "TABLE";
+		List<String> tableNameList = new ArrayList<String>();
+		
+		ResultSet metadataRs = metadata.getTables(null,null,null,type) ;
+		while(metadataRs.next()){
+			String tableName = metadataRs.getString(3);
+			tableNameList.add(tableName);
+		}
+		return tableNameList ;
+	}
+
+
+        /** simple util method to get all column names */
+        private List<String> getColumnNames(String tableName)throws Exception{
+                DatabaseMetaData metadata = this.CONN.getMetaData();
+                String[] type =  new String[1];
+		ResultSet metadataColumns 
+			= metadata.getColumns(null,null,tableName,null);
+
+		List<String> tableNameList = new ArrayList<String>();
+
+                while(metadataColumns.next()){
+                	String columnName = metadataColumns.getString(4);
+			tableNameList.add(columnName);
+		}
+
+		return tableNameList ;
 
 	}
 	public void exportToFolder(String folderName)throws Exception{
@@ -36,8 +109,12 @@ public class RDBExporter {
 			
 			String tableName = metadataRs.getString(3);
 			println("table:"+tableName);
- 			PrintWriter tableFileout
-   				= new PrintWriter(new BufferedWriter(new FileWriter(tableName+".data")));
+ 			PrintWriter tableFileout = 
+   			     new PrintWriter(
+				new BufferedWriter(
+					new FileWriter(folderName+"/"+tableName+".data")
+			     	)
+                             );
 			ResultSet metadataColumns = metadata.getColumns(null,null,tableName,null);
 
 			while(metadataColumns.next()){
