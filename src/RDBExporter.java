@@ -1,9 +1,10 @@
 package org.bigradzebra.experience;
 import java.sql.*;
+import java.io.*;
 
 public class RDBExporter {
 
-	private static String SEP="@@@";
+	private static String SEP="\001";
 	private Connection CONN ;
 	/**
 	 * @param args
@@ -35,6 +36,8 @@ public class RDBExporter {
 			
 			String tableName = metadataRs.getString(3);
 			println("table:"+tableName);
+ 			PrintWriter tableFileout
+   				= new PrintWriter(new BufferedWriter(new FileWriter(tableName+".data")));
 			ResultSet metadataColumns = metadata.getColumns(null,null,tableName,null);
 
 			while(metadataColumns.next()){
@@ -48,15 +51,19 @@ public class RDBExporter {
 			ResultSet dataSet = stat.executeQuery("select * from "+tableName);
 			ResultSetMetaData rsmd = dataSet.getMetaData();
 		    int numberOfColumns = rsmd.getColumnCount();
-	        while(dataSet.next()){
+	           while(dataSet.next()){
 	        	StringBuffer oneRow = new StringBuffer();
 	        	for(int i=1; i<= numberOfColumns ;i++){
 	        		oneRow.append(dataSet.getString(i));
 	        		oneRow.append(this.SEP);
 	        	}
 	        	println(oneRow.toString());
+                        tableFileout.println(oneRow.toString());
+                        tableFileout.flush();
 	        	
-	        }
+	            }
+                    tableFileout.close();
+          
 		}
 		
 		
