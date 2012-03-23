@@ -5,6 +5,7 @@ import java.util.*;
 
 public class RDBExporter {
 
+	private List<String> RESERVE_WORDS ;
 	private static String SEP="\001";
 	private Connection CONN ;
 	/**
@@ -25,6 +26,9 @@ public class RDBExporter {
 		Class.forName("org.sqlite.JDBC");	
 		this.CONN =
 	    	      DriverManager.getConnection("jdbc:sqlite:"+dbname);
+		this.RESERVE_WORDS = new ArrayList<String>();
+		this.RESERVE_WORDS.add("desc");
+		this.RESERVE_WORDS.add("select");
 
 	}
 	/** generage hive DDL */
@@ -50,14 +54,20 @@ public class RDBExporter {
                 Iterator<String> tableNamesIter = tableNames.iterator() ;
                 while(tableNamesIter.hasNext() ) {
 			String tableName =  tableNamesIter.next() ;
-                    	ddl.append("CREATE EXTERNAL TABLE " +tableName +"( \n");
+                    	ddl.append("CREATE EXTERNAL TABLE " +tableName +"( ");
 			List<String> columns = getColumnNames(tableName) ;
  			Iterator<String> columnsNamesIter = columns.iterator() ;
 	 		while(columnsNamesIter.hasNext() ){
 				String columnName = columnsNamesIter.next();
-				ddl.append(columnName+" STRING, \n") ;
+                                if (this.RESERVE_WORDS.contains(columnName)) {
+                         		columnName = "autochanged_"+columnName;
+                                }
+				ddl.append(columnName+" STRING,") ;
 			}
-			ddl.append("); \n" ) ;
+                        ddl.deleteCharAt(ddl.length() -1 );
+			ddl.append(") " ) ;
+
+			ddl.append("PARTITIONED BY (parti STRING) ; \n\n") ;
 		}
                 ddlout.println(ddl.toString());
 		ddlout.flush();
